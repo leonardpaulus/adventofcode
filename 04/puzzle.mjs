@@ -1,37 +1,52 @@
-import { numbers, boards } from "./testData.mjs";
+import { numbers, boards } from "./input.mjs";
 
 const bingo = (numbers, boards) => {
   let currentBoards = [...boards];
   let winningBoardIndex;
-  let winningBoard;
+  let winningNumber;
 
-  numbers.find((number) => {
+  numbers.find((number, index) => {
     for (let i = 0; i < currentBoards.length; i++) {
+      winningNumber = numbers[index];
       currentBoards = currentBoards.map((board) =>
         board.map((row) => row.map((num) => (num === number ? "X" : num)))
       );
-      winningBoardIndex = currentBoards.findIndex((board) =>
-        board.some((row) => row.every((entry) => entry === "X"))
+      winningBoardIndex = currentBoards.findIndex(
+        (board) =>
+          board.some((row) => row.every((entry) => entry === "X")) ||
+          board.every((row, i) => {
+            let counter = 0;
+            if (row[counter] === "X") return true;
+            if (i === 4) {
+              counter++;
+            }
+          })
       );
       if (winningBoardIndex >= 0) {
-        winningBoard = currentBoards[winningBoardIndex];
         return true;
       }
     }
     return false;
   });
 
-  const sumOfBoard = (winningBoard) => {
-    const sum = winningBoard[1].reduce((currentValue, nextValue) => {
-      if (typeof nextValue === "string") {
-        return currentValue + nextValue;
-      }
-      return currentValue;
-    }, 0);
-    console.log(sum);
+  const sumOfBoard = (board) => {
+    const rowSum = board.map((row) =>
+      row.reduce((currentValue, nextValue) => {
+        if (nextValue !== "X") {
+          return currentValue + nextValue;
+        }
+        return currentValue;
+      }, 0)
+    );
+    const sum = rowSum.reduce((prev, current) => prev + current);
+    return sum;
   };
 
-  return winningBoard;
+  const winningBoardSum = sumOfBoard(currentBoards[winningBoardIndex]);
+
+  const sum = winningBoardSum * winningNumber;
+
+  return sum;
 };
 
 console.log(bingo(numbers, boards));
